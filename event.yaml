@@ -10,14 +10,15 @@ spec:
         targetPort: 12000
   github:
     testController:
+      owner: arztz
       repository: argo-test-events
       webhook:
         endpoint: /push
         port: "12000"
         method: POST
-        url: https://argo-workflow.nize.ai
+        url: http://test-eventsource-github.nize.ai
       events:  
-        - "push"
+        - "*"
       apiToken:
         name: github-arztz-access
         key: token
