@@ -21,6 +21,7 @@ spec:
       apiToken:
         name: github-arztz-access
         key: token
+
 ---
 apiVersion: v1
 kind: Secret
