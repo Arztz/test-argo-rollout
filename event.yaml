@@ -1,0 +1,125 @@
+apiVersion: argoproj.io/v1alpha1
+kind: EventSource
+metadata:
+  name: test-github-controller
+spec:
+  service:
+    ports:
+      - port: 12000
+        targetPort: 12000
+  github:
+    testController:
+      repository: argo-test-events
+      webhook:
+        endpoint: /push
+        port: "12000"
+        method: POST
+        url: https://test-devops-github.nize.ai
+      events:  
+        - "push"
+      apiToken:
+        name: github-arztz-access
+        key: token
+
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: github-arztz-access
+type: Opaque
+data:
+  token: NzA0YjI2MDBjNmY1MjlkNGY4MzBmOTY4MmMxMDVmZDZmYWU0M2I3Ywo=
+
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: github
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+    - name: test-dep
+      eventSourceName: github
+      eventName: example
+  triggers:
+    - template:
+        name: github-workflow-trigger
+        k8s:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: github-
+              spec:
+                entrypoint: whalesay
+                arguments:
+                  parameters:
+                  - name: message
+                    # value will get overridden by the event payload
+                    value: hello world
+                templates:
+                - name: whalesay
+                  inputs:
+                    parameters:
+                    - name: message
+                  container:
+                    image: docker/whalesay:latest
+                    command: [cowsay]
+                    args: ["{{inputs.parameters.message}}"]
+          parameters:
+            - src:
+                dependencyName: test-dep
+              dest: spec.arguments.parameters.0.value
+
+
+
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: github
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+    - name: test-dep
+      eventSourceName: test-github-controller
+      eventName: testController
+  triggers:
+    - template:
+        name: github-workflow-trigger
+        k8s:
+          group: argoproj.io
+          version: v1alpha1
+          resource: workflows
+          operation: create
+          source:
+            resource:
+              apiVersion: argoproj.io/v1alpha1
+              kind: Workflow
+              metadata:
+                generateName: github-
+              spec:
+                entrypoint: whalesay
+                arguments:
+                  parameters:
+                  - name: message
+                    # value will get overridden by the event payload
+                    value: hello world
+                templates:
+                - name: whalesay
+                  inputs:
+                    parameters:
+                    - name: message
+                  container:
+                    image: docker/whalesay:latest
+                    command: [cowsay]
+                    args: ["{{inputs.parameters.message}}"]
+          parameters:
+            - src:
+                dependencyName: test-dep
+              dest: spec.arguments.parameters.0.value
