@@ -22,7 +22,7 @@ spec:
         name: github-arztz-access
         key: token
 
-
+---
 apiVersion: v1
 kind: Secret
 metadata:
