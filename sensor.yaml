@@ -191,7 +191,7 @@ spec:
                     valueFrom:
                       secretKeyRef:
                         name: gcloud-creds-gcr
-                        key: gcloudServiceKey      # Role Kubernetes Engine Admin
+                        key: gcloudServiceKey     
                 sidecars:
                 - name: dind
                   image: docker:19.03-dind
