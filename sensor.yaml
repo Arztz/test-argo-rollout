@@ -130,12 +130,14 @@ spec:
                     echo $GIT_DATA | jq -r '.repository.ssh_url' > /tmp/git-ssh-url
                     echo $TAG > /tmp/git-tag
                     echo $BRANCH > /tmp/branch
+                    echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
 
                     cat /tmp/.env
                     cat /tmp/event-name
                     cat /tmp/git-ssh-url
                     cat /tmp/git-tag
                     cat /tmp/branch
+                    cat /tmp/repo-name
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
@@ -159,6 +161,9 @@ spec:
                   - name: branch
                     valueFrom:
                       path: /tmp/branch
+                  - name: repo-name
+                    valueFrom:
+                      path: /tmp/repo-name
 
               - name: build-image
                 serviceAccountName: argo-events-sa
@@ -206,26 +211,9 @@ spec:
                 inputs:
                   parameters:
                   - name: git-tag
-                  - name: ssh-url
+                  - name: git-ssh-url
                   - name: message
-                  artifacts:
-                  - name: environment
-                    path: /tmp/.env
-                  - name: repository
-                    path: /workdir
-                    git:
-                      repo: "{{inputs.parameters.ssh-url}}"
-                      revision: "{{inputs.parameters.git-tag}}"
-                      sshPrivateKeySecret:
-                        name: gitlab-creds
-                        key: "{{inputs.parameters.message.repository.name}}"
-              - name: deploy-dev-qas
-                serviceAccountName: argo-events-sa
-                inputs:
-                  parameters:
-                  - name: git-tag
-                  - name: ssh-url
-                  - name: branch
+                  - name: repo-name
                   artifacts:
                   - name: environment
                     path: /tmp/.env
@@ -236,7 +224,26 @@ spec:
                       revision: "{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
                         name: gitlab-creds
-                        key: "{{inputs.parameters.message.repository.name}}"
+                        key: "{{inputs.parameters.repo-name}}"
+              - name: deploy-dev-qas
+                serviceAccountName: argo-events-sa
+                inputs:
+                  parameters:
+                  - name: git-tag
+                  - name: ssh-url
+                  - name: branch
+                  - name: repo-name
+                  artifacts:
+                  - name: environment
+                    path: /tmp/.env
+                  - name: repository
+                    path: /workdir
+                    git:
+                      repo: "{{inputs.parameters.git-ssh-url}}"
+                      revision: "{{inputs.parameters.git-tag}}"
+                      sshPrivateKeySecret:
+                        name: gitlab-creds
+                        key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: google/cloud-sdk
                   resources:
@@ -282,6 +289,7 @@ spec:
                   - name: git-tag
                   - name: ssh-url
                   - name: branch
+                  - name: repo-name
                   artifacts:
                   - name: environment
                     path: /tmp/.env
@@ -292,7 +300,7 @@ spec:
                       revision: "{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
                         name: gitlab-creds
-                        key: "{{inputs.parameters.message.repository.name}}"
+                        key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: google/cloud-sdk
                   resources:
