@@ -71,6 +71,10 @@ spec:
                         value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
                       - name: branch
                         value: "{{steps.prepare-environment.outputs.parameters.branch}}"
+                      - name: repo-name
+                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
+                      - name: git-ssh-url
+                        value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
@@ -84,6 +88,10 @@ spec:
                         value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
                       - name: branch
                         value: "{{steps.prepare-environment.outputs.parameters.branch}}"
+                      - name: repo-name
+                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
+                      - name: git-ssh-url
+                        value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
@@ -97,6 +105,10 @@ spec:
                         value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
                       - name: branch
                         value: "{{steps.prepare-environment.outputs.parameters.branch}}"
+                      - name: repo-name
+                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
+                      - name: git-ssh-url
+                        value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
