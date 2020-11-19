@@ -125,7 +125,7 @@ spec:
                       cat /tmp/branch
                     envFrom:
                     - configMapRef:
-                        name: {{inputs.parameters.message.repository.name}}
+                        name: "{{inputs.parameters.message.repository.name}}"
                   outputs:
                     artifacts: 
                     - name: environment
@@ -253,7 +253,7 @@ spec:
                       ./patch.sh || true
                     envFrom:
                     - configMapRef:
-                        name: {{inputs.parameters.message.repository.name}}
+                        name: "{{inputs.parameters.message.repository.name}}"
                     env:
                     - name: GCLOUD_SERVICE_KEY
                       valueFrom:
@@ -309,7 +309,7 @@ spec:
                       ./patch.sh || true
                     envFrom:
                     - configMapRef:
-                        name: {{inputs.parameters.message.repository.name}}
+                        name: "{{inputs.parameters.message.repository.name}}"
                     env:
                     - name: GCLOUD_SERVICE_KEY
                       valueFrom:
@@ -367,7 +367,7 @@ spec:
                       ./patch.sh
                     envFrom:
                     - configMapRef:
-                        name: {{inputs.parameters.message.repository.name}}
+                        name: "{{inputs.parameters.message.repository.name}}"
                     env:
                     - name: GCLOUD_SERVICE_KEY
                       valueFrom:
