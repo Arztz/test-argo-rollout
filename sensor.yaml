@@ -300,7 +300,7 @@ spec:
                 inputs:
                   parameters:
                   - name: git-tag
-                  - name: ssh-url
+                  - name: git-ssh-url
                   - name: branch
                   - name: repo-name
                   artifacts:
