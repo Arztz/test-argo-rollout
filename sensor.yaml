@@ -6,7 +6,7 @@ spec:
   template:
     serviceAccountName: argo-events-sa
   dependencies:
-  - name: github
+  - name: test-dep
     eventSourceName: test-github-controller
     eventName: testController
   triggers:
@@ -19,7 +19,7 @@ spec:
         operation: create
         parameters:
         - src:
-            dependencyName: github
+            dependencyName: test-dep
             dataKey: body
           dest: spec.arguments.parameters.0.value
         source:
