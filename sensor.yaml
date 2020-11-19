@@ -8,8 +8,8 @@ spec:
     serviceAccountName: argo-events-sa
   dependencies:
     - name: test-dep
-      eventSourceName: github
-      eventName: example
+      eventSourceName: test-github-controller
+      eventName: testController
   triggers:
     - template:
         name: github-workflow-trigger
