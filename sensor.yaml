@@ -224,7 +224,6 @@ spec:
                   parameters:
                   - name: git-tag
                   - name: git-ssh-url
-                  - name: message
                   - name: repo-name
                   artifacts:
                   - name: environment
@@ -237,6 +236,7 @@ spec:
                       sshPrivateKeySecret:
                         name: gitlab-creds
                         key: "{{inputs.parameters.repo-name}}"
+
               - name: deploy-dev-qas
                 serviceAccountName: argo-events-sa
                 inputs:
