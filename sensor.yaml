@@ -49,6 +49,9 @@ spec:
                   items:
                   - key: gcloudServiceKey
                     path: service_key.json
+              - name: ci-configmap
+                configMap:
+                  name: "{{workflow.parameters.message.repository.name}}"
               templates:
               - name: pipeline
                 steps:
@@ -135,7 +138,7 @@ spec:
                     cat /tmp/branch
                   envFrom:
                   - configMapRef:
-                      name: "{{workflow.parameters.message.repository.name}}"
+                      name: ci-configmap
                 inputs:
                   parameters:
                   - name: message
@@ -264,7 +267,7 @@ spec:
                     ./patch.sh || true
                   envFrom:
                   - configMapRef:
-                      name: "{{inputs.parameters.message.repository.name}}"
+                      name: ci-configmap
                   env:
                   - name: GCLOUD_SERVICE_KEY
                     valueFrom:
@@ -320,7 +323,7 @@ spec:
                     ./patch.sh
                   envFrom:
                   - configMapRef:
-                      name: "{{inputs.parameters.message.repository.name}}"
+                      name: ci-configmap
                   env:
                   - name: GCLOUD_SERVICE_KEY
                     valueFrom:
