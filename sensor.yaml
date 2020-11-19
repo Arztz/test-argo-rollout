@@ -72,7 +72,7 @@ spec:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
                 - - name: deploy-dev-qas
-                    template: deploy-dev
+                    template: deploy-dev-qas
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                             ( {{steps.prepare-environment.outputs.parameters.branch}} != 'prod') "
                     arguments:
@@ -85,7 +85,7 @@ spec:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
                 - - name: deploy-prod
-                    template: deploy-dev
+                    template: deploy-prod
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                             ( {{steps.prepare-environment.outputs.parameters.branch}} == 'prod') "
                     arguments:
