@@ -50,6 +50,7 @@ spec:
                   - key: gcloudServiceKey
                     path: service_key.json
               - name: ci-configmap
+                path: /tmp/scripts/
                 configMap:
                   name: "{{workflow.parameters.message.repository.name}}"
               templates:
