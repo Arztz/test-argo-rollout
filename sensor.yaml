@@ -101,9 +101,6 @@ spec:
 
               - name: prepare-environment
                 serviceAccountName: argo-events-sa
-                inputs:
-                  parameters:
-                    name: message
                 container:
                   image: stedolan/jq
                   command: [/bin/bash, -c]
@@ -139,6 +136,9 @@ spec:
                   envFrom:
                   - configMapRef:
                       name: "{{inputs.parameters.message.repository.name}}"
+                inputs:
+                  parameters:
+                  - name: message
                 outputs:
                   artifacts: 
                   - name: environment
@@ -156,6 +156,7 @@ spec:
                   - name: branch
                     valueFrom:
                       path: /tmp/branch
+
               - name: build-image
                 serviceAccountName: argo-events-sa
                 container:
