@@ -156,8 +156,6 @@ spec:
                   - name: branch
                     valueFrom:
                       path: /tmp/branch
-
-
               - name: build-image
                 serviceAccountName: argo-events-sa
                 container:
@@ -201,7 +199,6 @@ spec:
                   env:
                   - name: DOCKER_TLS_CERTDIR
                     value: ""
-
                 inputs:
                   parameters:
                   - name: git-tag
@@ -217,7 +214,6 @@ spec:
                       sshPrivateKeySecret:
                         name: gitlab-creds
                         key: "{{inputs.parameters.message.repository.name}}"
-              
               - name: deploy-dev-qas
                 serviceAccountName: argo-events-sa
                 inputs:
@@ -273,8 +269,6 @@ spec:
                       secretKeyRef:
                         name: gcloud-creds-gcr
                         key: gcloudServiceKey
-
-
               - name: deploy-prod
                 suspend: {}
                 serviceAccountName: argo-events-sa
