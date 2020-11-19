@@ -293,8 +293,9 @@ spec:
                       secretKeyRef:
                         name: gcloud-creds-gcr
                         key: gcloudServiceKey
+
               - name: deploy-prod
-                suspend: {}
+                
                 serviceAccountName: argo-events-sa
                 inputs:
                   parameters:
