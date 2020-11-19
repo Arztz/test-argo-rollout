@@ -62,28 +62,28 @@ spec:
                       when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                               ( {{steps.prepare-environment.outputs.parameters.branch}} != 'prod') "
                       arguments:
-                      parameters:
-                      - name: git-tag
-                        value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
-                      - name: branch
-                        value: "{{steps.prepare-environment.outputs.parameters.branch}}"
-                      artifacts:
-                      - name: environment
-                        from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                        parameters:
+                        - name: git-tag
+                          value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
+                        - name: branch
+                          value: "{{steps.prepare-environment.outputs.parameters.branch}}"
+                        artifacts:
+                        - name: environment
+                          from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
                   - - name: deploy-prod
                       dependencies: [prepare-environment]
                       template: deploy-dev
                       when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                               ( {{steps.prepare-environment.outputs.parameters.branch}} == 'prod') "
                       arguments:
-                      parameters:
-                      - name: git-tag
-                        value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
-                      - name: branch
-                        value: "{{steps.prepare-environment.outputs.parameters.branch}}"
-                      artifacts:
-                      - name: environment
-                        from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                        parameters:
+                        - name: git-tag
+                          value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
+                        - name: branch
+                          value: "{{steps.prepare-environment.outputs.parameters.branch}}"
+                        artifacts:
+                        - name: environment
+                          from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
 
 
                 - name: prepare-environment
