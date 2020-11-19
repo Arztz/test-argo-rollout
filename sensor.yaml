@@ -135,7 +135,7 @@ spec:
                     cat /tmp/branch
                   envFrom:
                   - configMapRef:
-                      name: "{{inputs.parameters.message.repository.name}}"
+                      name: {{inputs.parameters.message.repository.name}}
                 inputs:
                   parameters:
                   - name: message
@@ -204,6 +204,7 @@ spec:
                   parameters:
                   - name: git-tag
                   - name: ssh-url
+                  - name: message
                   artifacts:
                   - name: environment
                     path: /tmp/.env
