@@ -57,7 +57,7 @@ spec:
                         - name: environment
                           from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
                   - - name: deploy-dev-qas
-                      dependencies: [build-image]
+                      dependencies: ["build-image"]
                       template: deploy-dev
                       when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                               ( {{steps.prepare-environment.outputs.parameters.branch}} != 'prod') "
@@ -71,7 +71,6 @@ spec:
                         - name: environment
                           from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
                   - - name: deploy-prod
-                      dependencies: [prepare-environment]
                       template: deploy-dev
                       when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                               ( {{steps.prepare-environment.outputs.parameters.branch}} == 'prod') "
