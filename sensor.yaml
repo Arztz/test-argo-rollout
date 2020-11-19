@@ -135,7 +135,7 @@ spec:
                     cat /tmp/branch
                   envFrom:
                   - configMapRef:
-                      name: {{inputs.parameters.message.repository.name}}
+                      name: "{{workflow.parameters.message.repository.name}}"
                 inputs:
                   parameters:
                   - name: message
