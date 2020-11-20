@@ -243,7 +243,7 @@ spec:
                       repo: "{{inputs.parameters.git-ssh-url}}"
                       revision: "{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
-                        name: gitlab-creds
+                        name: github-creds
                         key: "{{inputs.parameters.repo-name}}"
 
               - name: deploy-dev-qas
@@ -263,7 +263,7 @@ spec:
                       repo: "{{inputs.parameters.git-ssh-url}}"
                       revision: "{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
-                        name: gitlab-creds
+                        name: github-creds
                         key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: google/cloud-sdk
@@ -321,7 +321,7 @@ spec:
                       repo: "{{inputs.parameters.git-ssh-url}}"
                       revision: "{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
-                        name: gitlab-creds
+                        name: github-creds
                         key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: google/cloud-sdk
