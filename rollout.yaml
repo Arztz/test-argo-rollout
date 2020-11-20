@@ -12,6 +12,12 @@ spec:
           stableIngress: rollouts-demo-stable
       steps:
       - setWeight: 5
+      - pause:
+          duration: 20s
+      - setWeight: 30
+      - pause:
+          duration: 20s
+      - setWeight: 60
       - pause: {}
   revisionHistoryLimit: 2
   selector:
@@ -24,7 +30,7 @@ spec:
     spec:
       containers:
       - name: rollouts-demo
-        image: argoproj/rollouts-demo:yellow
+        image: argoproj/rollouts-demo:red
         ports:
         - name: http
           containerPort: 8080

@@ -350,7 +350,7 @@ spec:
                     echo CONTAINER_NAME: $CONTAINER_NAME
                     sed -i "s|name:|name: $CONTAINER_NAME|g; s|image:|image: $IMAGE|g;" k8s/patch.yaml
                     kubectl patch deploy -n $STAGING_NAMESPACE $DEPLOYMENT_NAME -p "$(cat k8s/patch.yaml)"
-                    ./patch.sh
+                    ./patch.sh || true
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
