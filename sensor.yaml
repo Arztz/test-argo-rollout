@@ -163,6 +163,12 @@ spec:
                   artifacts: 
                   - name: environment
                     path: /tmp/.env
+                    gcs:
+                      bucket: argo-artifact-zygen
+                      key: "{{workflow.name}}/.env.tgz"
+                      serviceAccountKeySecret:
+                        name: gcs-argo-artifact
+                        key: serviceAccountKey
                   parameters:
                   - name: event-name
                     valueFrom:
