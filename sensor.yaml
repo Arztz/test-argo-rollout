@@ -116,8 +116,6 @@ spec:
 
 
               - name: prepare-environment
-                archiveLocation:
-                  archiveLogs: true
                 serviceAccountName: argo-events-sa
                 container:
                   image: stedolan/jq
@@ -163,12 +161,16 @@ spec:
                   artifacts: 
                   - name: environment
                     path: /tmp/.env
-                    gcs:
+                    s3:
+                      endpoint: storage.googleapis.com
                       bucket: argo-artifact-devops
                       key: "{{workflow.name}}/.env.tgz"
-                      serviceAccountKeySecret:
-                        name: gcs-argo-artifact
-                        key: serviceAccountKey
+                      accessKeySecret:
+                        name: my-gcs-s3-credentials
+                        key: accessKey
+                      secretKeySecret:
+                        name: my-gcs-s3-credentials
+                        key: secretKey
                   parameters:
                   - name: event-name
                     valueFrom:
