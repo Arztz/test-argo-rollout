@@ -116,10 +116,10 @@ spec:
 
 
               - name: prepare-environment
-                serviceAccountName: argo-events-sa
-                container:
                 archiveLocation:
                   archiveLogs: true
+                serviceAccountName: argo-events-sa
+                container:
                   image: stedolan/jq
                   command: [/bin/bash, -c]
                   args: 
