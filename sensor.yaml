@@ -35,9 +35,9 @@ spec:
                 - name: message
                   value: hello world
               volumes:
-              - name: gitlab-creds-vol
+              - name: github-creds-vol
                 secret:
-                  secretName: gitlab-creds
+                  secretName: github-creds
                   defaultMode: 0500
                   items:
                   - key: "{{workflow.parameters.message.repository.name}}"
