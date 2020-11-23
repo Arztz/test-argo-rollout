@@ -163,7 +163,7 @@ spec:
                     path: /tmp/.env
                     gcs:
                       bucket: argo-artifact-devops
-                      key: "{{workflow.repository.name}}/.env.tgz"
+                      key: "{{workflow.name}}/.env.tgz"
                       serviceAccountKeySecret:
                         name: gcs-argo-artifact
                         key: serviceAccountKey
