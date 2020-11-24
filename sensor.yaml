@@ -274,7 +274,7 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-                    ls
+                    kustomize edit set image $CONTAINER_RELEASE_IMAGE_TAG
                     . patch.sh
 
                   envFrom:
