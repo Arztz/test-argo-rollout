@@ -276,7 +276,7 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-
+                    mkdir .ssh
                     cat <<EOF > $HOME/.ssh/id_rsa
                       $id_rsa
                     EOF
