@@ -274,8 +274,8 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-                    kustomize edit set image $CONTAINER_RELEASE_IMAGE_TAG
-                    . patch.sh
+                    sed -i "s|image:.*|image: $$CONTAINER_RELEASE_IMAGE_TAG |g" 
+                    . patch.sh || true
                     git add . -m "Update guestbook to v2.0"
                     git push
                   envFrom:
