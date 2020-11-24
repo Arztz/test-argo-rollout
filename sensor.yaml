@@ -123,7 +123,7 @@ spec:
                   args: 
                   - |
                     
-                    export GIT_DATA = $(echo '{{inputs.parameters.message}}' | jq -r . )
+                    export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
 
                     cat <<EOF > /tmp/.env
                     export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.html_url' | sed 's|https://github.com/||g; s|_|-|g; s|/|-|g;')
@@ -153,7 +153,7 @@ spec:
                     cat /tmp/repo-name
                   envFrom:
                   - configMapRef:
-                      name: "{{inputs.parameters.message.repository.name}}"
+                      name: ci-configmap
                 inputs:
                   parameters:
                   - name: message
@@ -161,12 +161,6 @@ spec:
                   artifacts: 
                   - name: environment
                     path: /tmp/.env
-                    gcs:
-                      bucket: argo-artifact-devops
-                      key: "{{workflow.name}}/.env.tgz"
-                      serviceAccountKeySecret:
-                        name: gcs-argo-artifact
-                        key: serviceAccountKey
                   parameters:
                   - name: event-name
                     valueFrom:
