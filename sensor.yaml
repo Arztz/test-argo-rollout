@@ -126,7 +126,7 @@ spec:
                     export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
 
                     cat <<EOF > /tmp/.env
-                    export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.html_url' | sed 's|https://github.com/||g; s|_|-|g; s|/|-|g;')
+                    export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.html_url' | sed 's|https://github.com/||g; s|_|-|g; s|/|-|g;' | tr [:lower:])
                     export TAG=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[a-z-]//g')
                     export BRANCH=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[\.0-9-]//g')
                     EOF
