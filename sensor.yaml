@@ -277,6 +277,7 @@ spec:
                   - |
                     . /tmp/.env
                     eval `ssh-agent -s`
+                    cat id_rsa
                     ssh-add id_rsa
                     git clone {{inputs.parameters.git-ssh-url}}
                     git config --global user.email "devops@humanize.co.th"
