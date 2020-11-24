@@ -276,7 +276,8 @@ spec:
                     . /tmp/.env
                     sed -i "s|image:.*|image: $$CONTAINER_RELEASE_IMAGE_TAG |g" 
                     . patch.sh || true
-                    git add . -m "Update guestbook to v2.0"
+                    git add . 
+                    git commit -m "patch by {{workflow.name}} "
                     git push
                   envFrom:
                   - configMapRef:
