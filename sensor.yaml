@@ -226,6 +226,7 @@ spec:
                   - name: git-tag
                   - name: git-ssh-url
                   - name: repo-name
+                  - name: branch
                   artifacts:
                   - name: environment
                     path: /tmp/.env
