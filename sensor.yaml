@@ -254,7 +254,7 @@ spec:
                     path: /workdir
                     git:
                       repo: "{{inputs.parameters.git-ssh-url}}"
-                      revision: "{{inputs.parameters.git-tag}}"
+                      revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
                         name: github-creds
                         key: "{{inputs.parameters.repo-name}}"
@@ -312,7 +312,7 @@ spec:
                     path: /workdir
                     git:
                       repo: "{{inputs.parameters.git-ssh-url}}"
-                      revision: "{{inputs.parameters.git-tag}}"
+                      revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
                         name: github-creds
                         key: "{{inputs.parameters.repo-name}}"
