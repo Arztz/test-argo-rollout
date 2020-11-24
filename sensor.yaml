@@ -161,16 +161,12 @@ spec:
                   artifacts: 
                   - name: environment
                     path: /tmp/.env
-                    s3:
-                      endpoint: storage.googleapis.com
+                    gcs:
                       bucket: argo-artifact-devops
                       key: "{{workflow.name}}/.env.tgz"
-                      accessKeySecret:
-                        name: my-gcs-s3-credentials
-                        key: accessKey
-                      secretKeySecret:
-                        name: my-gcs-s3-credentials
-                        key: secretKey
+                      serviceAccountKeySecret:
+                        name: gcs-argo-artifact
+                        key: serviceAccountKey
                   parameters:
                   - name: event-name
                     valueFrom:
