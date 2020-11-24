@@ -276,9 +276,11 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-                    git status
-                    eval `ssh-agent -s`
-                    ssh-add id_rsa
+
+                    cat <<EOF > $HOME/.ssh/id_rsa
+                      $id_rsa
+                    EOF
+
                     git clone {{inputs.parameters.git-ssh-url}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
@@ -291,6 +293,12 @@ spec:
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
+                  env:
+                  - name: id_rsa
+                    valueFrom:
+                      secretKeyRef:
+                        name: github-creds
+                        key: "{{inputs.parameters.repo-name}}"
 
               - name: deploy-prod
                 
