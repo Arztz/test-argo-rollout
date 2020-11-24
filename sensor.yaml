@@ -30,6 +30,8 @@ spec:
               generateName: github-workflow-
             spec:
               entrypoint: pipeline
+              podGC:
+                strategy: OnWorkflowSuccess
               arguments:
                 parameters:
                 - name: message
@@ -257,9 +259,9 @@ spec:
                       revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
                         name: github-creds
-                        key: "{{inputs.parameters.repo-name}}"
+                        key: "{{inputs.parameters.repo-name}}-config"
                 container:
-                  image: google/cloud-sdk
+                  image: alpine/git
                   resources:
                     limits:
                       cpu: 100m
@@ -272,29 +274,12 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-                    cat <<EOF > service_key.json
-                    $GCLOUD_SERVICE_KEY
-                    EOF
-                    gcloud auth activate-service-account --key-file=service_key.json
-                    gcloud container clusters get-credentials $GCLOUD_CLUSTER --zone asia-southeast1-b --project $GCLOUD_PROJECT_ID
-                    export DEPLOYMENT_NAME="$(kubectl get deploy -n $NAMESPACE-$BRANCH -l app=$APP_NAME | awk 'NR>1 { print $1 }')"
-                    echo DEPLOYMENT_NAME: $DEPLOYMENT_NAME
-                    export IMAGE=$CONTAINER_RELEASE_IMAGE_TAG
-                    echo IMAGE: $IMAGE
-                    export CONTAINER_NAME=$TARGET_CONTAINER
-                    echo CONTAINER_NAME: $CONTAINER_NAME
-                    sed -i "s|name:|name: $CONTAINER_NAME|g; s|image:|image: $IMAGE|g;" k8s/patch.yaml
-                    kubectl patch deploy -n $STAGING_NAMESPACE $DEPLOYMENT_NAME -p "$(cat k8s/patch.yaml)"
-                    ./patch.sh || true
+                    ls
+                    . patch.sh
+
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
-                  env:
-                  - name: GCLOUD_SERVICE_KEY
-                    valueFrom:
-                      secretKeyRef:
-                        name: gcloud-creds-gcr
-                        key: gcloudServiceKey
 
               - name: deploy-prod
                 
