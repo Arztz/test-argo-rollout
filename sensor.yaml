@@ -277,7 +277,7 @@ spec:
                   - |
                     . /tmp/.env
                     ssh-add id_rsa
-                    git remote {{inputs.parameters.git-ssh-url}}
+                    
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
