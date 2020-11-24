@@ -294,6 +294,7 @@ spec:
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
+                  env:
                   - name: id_rsa
                     valueFrom:
                       secretKeyRef:
