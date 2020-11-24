@@ -153,7 +153,7 @@ spec:
                     cat /tmp/repo-name
                   envFrom:
                   - configMapRef:
-                      name: ci-configmap
+                      name: "{{inputs.parameters.message.repository.name}}"
                 inputs:
                   parameters:
                   - name: message
