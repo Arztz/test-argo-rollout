@@ -274,7 +274,8 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-                    sed -i "s|image:.*|image: $$CONTAINER_RELEASE_IMAGE_TAG |g" 
+                    git checkout develop
+                    sed -i "s|image:.*|image: $$CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
                     . patch.sh || true
                     git add . 
                     git commit -m "patch by {{workflow.name}} "
