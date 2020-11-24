@@ -259,7 +259,7 @@ spec:
                       revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
                         name: github-creds
-                        key: "{{inputs.parameters.repo-name}}-config"
+                        key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: alpine/git
                   resources:
