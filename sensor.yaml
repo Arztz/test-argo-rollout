@@ -254,14 +254,6 @@ spec:
                   artifacts:
                   - name: environment
                     path: /tmp/.env
-                  - name: repository
-                    path: /workdir
-                    git:
-                      repo: "{{inputs.parameters.git-ssh-url}}"
-                      revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
-                      sshPrivateKeySecret:
-                        name: github-creds
-                        key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: bitnami/git
                   resources:
@@ -278,12 +270,8 @@ spec:
                     
                     . /tmp/.env
                     
-                    eval $(ssh-agent -s)
-                    echo "$ssh" | tr -d '\r' | ssh-add - > /dev/null
-                    mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
-                    echo "github.com" >> ~/.ssh/known_hosts
-
-                    git remote set-url origin {{inputs.parameters.git-ssh-url}}
+                    git clone {{inputs.parameters.git-ssh-url}}
+                    
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
