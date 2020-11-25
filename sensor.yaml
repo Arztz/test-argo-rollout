@@ -283,6 +283,7 @@ spec:
                     EOF
                     chmod 700 ~/.ssh/id_rsa.pub
                     eval `ssh-agent -s`
+                    RUN  echo "    IdentityFile ~/.ssh/id_rsa" >> /etc/ssh/ssh_config
                     ssh-add ~/.ssh/id_rsa.pub
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
