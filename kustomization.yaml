@@ -3,5 +3,5 @@ resources:
   - service.yaml
   - ingress.yaml
 
-patch:
+patches:
   - patch.yaml
