@@ -269,11 +269,8 @@ spec:
                   - |
                     
                     . /tmp/.env
-                    mkdir ~/.ssh
-                    echo "$ssh" | tr -d '\r' > ~/.ssh/id_rsa
-                    chmod 400 ~/.ssh/id_rsa
-                    ssh-keygen -m ~/.ssh/id_rsa -t rsa -P ""
-                    ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa; git clone ssh://{{inputs.parameters.git-ssh-url}}'
+
+                    git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
 
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
@@ -287,11 +284,11 @@ spec:
                   - configMapRef:
                       name: ci-configmap
                   env:
-                  - name: ssh
+                  - name: token
                     valueFrom:
                       secretKeyRef:
-                        name: github-creds
-                        key: "{{inputs.parameters.repo-name}}"
+                        name: github-arztz-access
+                        key: token
 
               - name: deploy-prod
                 
