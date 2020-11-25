@@ -3,5 +3,6 @@ resources:
   - service.yaml
   - ingress.yaml
 
+namespace: test-argo-rollout-dev
 patches:
   - patch.yaml
