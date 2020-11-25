@@ -281,7 +281,7 @@ spec:
                     cat <<EOF > ~/.ssh/id_rsa.pub
                     echo $ssh 
                     EOF
-                    cat <<EOF > ~/.ssh/id_rsa.pub
+                    cat ~/.ssh/id_rsa.pub
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
