@@ -274,8 +274,8 @@ spec:
                      $ssh 
                     EOF
                     chmod 400 ~/.ssh/id_rsa
-
-                    git clone {{inputs.parameters.git-ssh-url}} -key ~/.ssh/id_rsa
+                    
+                    ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa; git clone {{inputs.parameters.git-ssh-url}}'
 
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
