@@ -282,7 +282,10 @@ spec:
                      $ssh 
                     EOF
                     chmod 400 ~/.ssh/id_rsa
-                    ssh-keygen -t rsa -b 4096 -m ~/.ssh/id_rsa
+                    eval $(ssh-agent -s)
+                    echo "$ssh" | tr -d '\r' | ssh-add - > /dev/null
+                    mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
+                    echo "github.com" >> ~/.ssh/known_hosts
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
