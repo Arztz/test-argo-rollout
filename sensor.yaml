@@ -274,7 +274,7 @@ spec:
                     cd {{inputs.parameters.repo-name}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
-                    git checkout $branch
+                    git checkout -B $branch
                     sed -i "s|image:.*|image: $$CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
                     
                     git add .
