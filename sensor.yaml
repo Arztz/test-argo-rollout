@@ -269,9 +269,14 @@ spec:
                   - |
                     
                     . /tmp/.env
-                    
-                    git clone {{inputs.parameters.git-ssh-url}}
-                    
+                    mkdir ~/.ssh
+                    cat <<EOF > ~/.ssh/id_rsa
+                     $ssh 
+                    EOF
+                    chmod 400 ~/.ssh/id_rsa
+
+                    git clone {{inputs.parameters.git-ssh-url}} -key ~/.ssh/id_rsa
+
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
