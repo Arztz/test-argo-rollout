@@ -276,7 +276,7 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
-                    
+                    git remote add origin {{inputs.parameters.repo-name}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
@@ -291,11 +291,11 @@ spec:
                   - configMapRef:
                       name: ci-configmap
                   env:
-                  - name: token
+                  - name: ssh
                     valueFrom:
                       secretKeyRef:
-                        name: github-arztz-access
-                        key: token
+                        name: github-creds
+                        key: "{{inputs.parameters.repo-name}}"
 
               - name: deploy-prod
                 
