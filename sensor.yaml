@@ -278,13 +278,11 @@ spec:
                     
                     . /tmp/.env
                     mkdir ~/.ssh
-                    cat <<EOF > ~/.ssh/id_rsa.pub
+                    cat <<EOF > ~/.ssh/id_rsa
                      $ssh 
                     EOF
-                    chmod 700 ~/.ssh/id_rsa.pub
-                    eval `ssh-agent -s`
-                    RUN  echo "    IdentityFile ~/.ssh/id_rsa" >> /etc/ssh/ssh_config
-                    ssh-keygen -lf ~/.ssh/id_rsa.pub
+                    chmod 700 ~/.ssh/id_rsa
+
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
