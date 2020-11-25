@@ -281,10 +281,8 @@ spec:
                     cat <<EOF > ~/.ssh/id_rsa
                      $ssh 
                     EOF
-                    chmod 700 ~/.ssh/id_rsa
-                    eval "$(ssh-agent -s)"
-                    ssh-add ~/.ssh/id_rsa
-                    
+                    chmod 400 ~/.ssh/id_rsa
+
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
                     git checkout develop
