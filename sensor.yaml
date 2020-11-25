@@ -279,7 +279,7 @@ spec:
                     . /tmp/.env
                     mkdir ~/.ssh
                     cat <<EOF > ~/.ssh/id_rsa.pub
-                    echo $ssh 
+                     $ssh 
                     EOF
                     cat ~/.ssh/id_rsa.pub
                     git config --global user.email "devops@humanize.co.th"
