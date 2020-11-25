@@ -277,11 +277,7 @@ spec:
                   - |
                     
                     . /tmp/.env
-                    mkdir ~/.ssh
-                    cat <<EOF > ~/.ssh/id_rsa
-                     $ssh 
-                    EOF
-                    chmod 400 ~/.ssh/id_rsa
+                    
                     eval $(ssh-agent -s)
                     echo "$ssh" | tr -d '\r' | ssh-add - > /dev/null
                     mkdir -p ~/.ssh && touch ~/.ssh/known_hosts
