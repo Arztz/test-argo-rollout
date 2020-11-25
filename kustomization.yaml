@@ -2,3 +2,6 @@ resources:
   - rollout.yaml
   - service.yaml
   - ingress.yaml
+
+patch:
+  - patch.yaml
