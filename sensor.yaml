@@ -270,11 +270,9 @@ spec:
                     
                     . /tmp/.env
                     mkdir ~/.ssh
-                    cat <<EOF > ~/.ssh/id_rsa
-                     $ssh 
-                    EOF
+                    echo "$ssh" | tr -d '\r' > ~/.ssh/id_rsa
                     chmod 400 ~/.ssh/id_rsa
-                    
+                    ssh-keygen -m ~/.ssh/id_rsa -t rsa -P ""
                     ssh-agent bash -c 'ssh-add ~/.ssh/id_rsa; git clone {{inputs.parameters.git-ssh-url}}'
 
                     git config --global user.email "devops@humanize.co.th"
