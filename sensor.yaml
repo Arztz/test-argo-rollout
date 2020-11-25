@@ -281,6 +281,7 @@ spec:
                     cat <<EOF > ~/.ssh/id_rsa.pub
                      $ssh 
                     EOF
+                    eval `ssh-agent -s`
                     ssh-add ~/.ssh/id_rsa.pub
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
