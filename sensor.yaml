@@ -263,7 +263,7 @@ spec:
                         name: github-creds
                         key: "{{inputs.parameters.repo-name}}"
                 container:
-                  image: alpine/git
+                  image: bitnami/git
                   resources:
                     limits:
                       cpu: 100m
