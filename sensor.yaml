@@ -276,6 +276,7 @@ spec:
                   args: 
                   - |
                     . /tmp/.env
+                    ls -lart
                     git clone {{inputs.parameters.git-ssh-url}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
