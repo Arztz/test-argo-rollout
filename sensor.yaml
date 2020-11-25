@@ -275,10 +275,10 @@ spec:
                   command: [sh, -c]
                   args: 
                   - |
-                    mkdir .ssh
-                    . /tmp/.env
                     
-                    cat <<EOF > $HOME/.ssh/id_rsa.pub
+                    . /tmp/.env
+                    mkdir ~/.ssh
+                    cat <<EOF > ~/.ssh/id_rsa.pub
                     echo $ssh 
                     EOF
                     git config --global user.email "devops@humanize.co.th"
