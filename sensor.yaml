@@ -122,7 +122,6 @@ spec:
                     echo $GIT_DATA | jq -r '.ref' > /tmp/git-tag
                     echo $BRANCH > /tmp/branch
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
-                    echo $GCLOUD_CLUSTER > /tmp/cluster
 
                     cat /tmp/.env
                     cat /tmp/event-name
@@ -159,7 +158,6 @@ spec:
                   - name: git-tag
                   - name: git-ssh-url
                   - name: repo-name
-                  - name: cluster
                   artifacts:
                   - name: environment
                     path: /tmp/.env
