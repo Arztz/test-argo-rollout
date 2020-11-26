@@ -223,7 +223,8 @@ spec:
                     value: ""
                 - name: jq
                   image: stedolan/jq
-                
+                  securityContext:
+                    privileged: true
               - name: deploy-dev-qas
                 serviceAccountName: argo-events-sa
                 inputs:
