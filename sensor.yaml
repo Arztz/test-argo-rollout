@@ -41,21 +41,22 @@ spec:
               templates:
               - name: pipeline
                 steps:
-                - - name: prepare-environment
-                    template: prepare-environment
+                - - name: prepare-repo-name
+                    template: prepare-repo-name
                     arguments:
                       parameters:
                       - name: message
                         value: "{{workflow.parameters.message}}"
-                - - name: prepare-projectid
-                    template: prepare-projectid
+
+                - - name: prepare-environment
+                    template: prepare-environment
                     arguments:
                       parameters:
                       - name: repo-name
-                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
-                      artifacts:
-                      - name: environment
-                        from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                        value: "{{steps.prepare-repo-name.outputs.parameters.repo-name}}"
+                      - name: message
+                        value: "{{workflow.parameters.message}}"
+                
                     
                 - - name: build-image
                     template: build-image
@@ -107,11 +108,30 @@ spec:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
 
+              - name: prepare-repo-name
+                serviceAccountName: argo-events-sa
+                inputs:
+                  parameters:
+                  - name: message
+                container:
+                  image: stedolan/jq
+                  command: [/bin/bash, -c]
+                  args: 
+                  - |
+                    export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
+                    echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
+                outputs:
+                  parameters:
+                  - name: repo-name
+                    valueFrom:
+                      path: /tmp/repo-name
+
               - name: prepare-environment
                 serviceAccountName: argo-events-sa
                 inputs:
                   parameters:
                   - name: message
+                  - name: repo-name
                 container:
                   image: stedolan/jq
                   command: [/bin/bash, -c]
@@ -127,6 +147,11 @@ spec:
                     EOF
 
                     . /tmp/.env
+                    cat <<EOF >> /tmp/.env
+                    export REGISTRY=$CONTAINER_REGISTRY
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
+                    EOF
                     
                     echo $GIT_DATA | jq -r '.ref_type' > /tmp/event-name
                     echo $GIT_DATA | jq -r '.repository.ssh_url' > /tmp/git-ssh-url
@@ -161,35 +186,7 @@ spec:
                   - name: repo-name
                     valueFrom:
                       path: /tmp/repo-name
-              - name: prepare-projectid
-                serviceAccountName: argo-events-sa
-                inputs:
-                  parameters:
-                  - name: repo-name
-                  artifacts:
-                  - name: environment
-                    path: /tmp/.env
-                container:
-                  image: stedolan/jq
-                  command: [/bin/bash, -c]
-                  args: 
-                  - |
-                    . /tmp/.env
-                    cat <<EOF >> /tmp/.env
-                    export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
-                    EOF
-
-                    cat /tmp/.env
-                    cp /tmp/.env /tmp/.env2
-                  envFrom:
-                  - configMapRef:
-                      name: ci-configmap
-                outputs:
-                  artifacts: 
-                  - name: environment
-                    path: /tmp/.env2
+              
 
               - name: build-image
                 serviceAccountName: argo-events-sa
