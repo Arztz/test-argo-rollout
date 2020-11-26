@@ -221,6 +221,8 @@ spec:
                   env:
                   - name: DOCKER_TLS_CERTDIR
                     value: ""
+                - name: jq
+                  image: stedolan/jq
                 
               - name: deploy-dev-qas
                 serviceAccountName: argo-events-sa
