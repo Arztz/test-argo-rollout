@@ -38,25 +38,6 @@ spec:
                 parameters:
                 - name: message
                   value: hello world
-              volumes:
-              - name: github-creds-vol
-                secret:
-                  secretName: github-creds
-                  defaultMode: 0500
-                  items:
-                  - key: "{{workflow.parameters.message.repository.name}}"
-                    path: id_rsa
-              - name: gcloud-creds-gcr-vol
-                secret:
-                  secretName: gcloud-creds-gcr
-                  defaultMode: 0500
-                  items:
-                  - key: gcloudServiceKey
-                    path: service_key.json
-              - name: ci-configmap
-                path: /tmp/scripts/
-                configMap:
-                  name: "{{workflow.parameters.message.repository.name}}"
               templates:
               - name: pipeline
                 steps:
@@ -74,12 +55,12 @@ spec:
                       parameters:
                       - name: git-tag
                         value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
-                      - name: branch
-                        value: "{{steps.prepare-environment.outputs.parameters.branch}}"
                       - name: repo-name
                         value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
                       - name: git-ssh-url
                         value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
+                      - name: cluster
+                        value: "{{steps.prepare-environment.outputs.parameters.cluster}}"  
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
@@ -91,8 +72,6 @@ spec:
                       parameters:
                       - name: git-tag
                         value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
-                      - name: branch
-                        value: "{{steps.prepare-environment.outputs.parameters.branch}}"
                       - name: repo-name
                         value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
                       - name: git-ssh-url
@@ -100,6 +79,10 @@ spec:
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                - - name: approve
+                    template: approve
+                    when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
+                            ( {{steps.prepare-environment.outputs.parameters.branch}} == 'prod') "
                 - - name: deploy-prod
                     template: deploy-prod
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
@@ -108,8 +91,6 @@ spec:
                       parameters:
                       - name: git-tag
                         value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
-                      - name: branch
-                        value: "{{steps.prepare-environment.outputs.parameters.branch}}"
                       - name: repo-name
                         value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
                       - name: git-ssh-url
@@ -118,9 +99,11 @@ spec:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
 
-
               - name: prepare-environment
                 serviceAccountName: argo-events-sa
+                inputs:
+                  parameters:
+                  - name: message
                 container:
                   image: stedolan/jq
                   command: [/bin/bash, -c]
@@ -145,22 +128,22 @@ spec:
 
                     echo $GIT_DATA | jq -r '.ref_type' > /tmp/event-name
                     echo $GIT_DATA | jq -r '.repository.ssh_url' > /tmp/git-ssh-url
-                    echo $TAG > /tmp/git-tag
+                    echo $GIT_DATA | jq -r '.ref' > /tmp/git-tag
                     echo $BRANCH > /tmp/branch
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
+                    echo $GCLOUD_CLUSTER > /tmp/cluster
 
+                    cat {{workflow}}
                     cat /tmp/.env
                     cat /tmp/event-name
                     cat /tmp/git-ssh-url
                     cat /tmp/git-tag
                     cat /tmp/branch
                     cat /tmp/repo-name
+                    cat /tmp/cluster
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
-                inputs:
-                  parameters:
-                  - name: message
                 outputs:
                   artifacts: 
                   - name: environment
@@ -181,9 +164,29 @@ spec:
                   - name: repo-name
                     valueFrom:
                       path: /tmp/repo-name
+                  - name: cluster 
+                    valueFrom:
+                      path: /tmp/cluster
 
               - name: build-image
                 serviceAccountName: argo-events-sa
+                inputs:
+                  parameters:
+                  - name: git-tag
+                  - name: git-ssh-url
+                  - name: repo-name
+                  - name: cluster
+                  artifacts:
+                  - name: environment
+                    path: /tmp/.env
+                  - name: repository
+                    path: /workdir
+                    git:
+                      repo: "{{inputs.parameters.git-ssh-url}}"
+                      revision: "{{inputs.parameters.git-tag}}"
+                      sshPrivateKeySecret:
+                        name: git-creds
+                        key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: docker:19.03
                   resources:
@@ -215,7 +218,7 @@ spec:
                     valueFrom:
                       secretKeyRef:
                         name: gcloud-creds-gcr
-                        key: gcloudServiceKey     
+                        key: "{{inputs.parameters.cluster}}"     
                 sidecars:
                 - name: dind
                   image: docker:19.03-dind
@@ -225,31 +228,13 @@ spec:
                   env:
                   - name: DOCKER_TLS_CERTDIR
                     value: ""
-                inputs:
-                  parameters:
-                  - name: git-tag
-                  - name: git-ssh-url
-                  - name: repo-name
-                  - name: branch
-                  artifacts:
-                  - name: environment
-                    path: /tmp/.env
-                  - name: repository
-                    path: /workdir
-                    git:
-                      repo: "{{inputs.parameters.git-ssh-url}}"
-                      revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
-                      sshPrivateKeySecret:
-                        name: github-creds
-                        key: "{{inputs.parameters.repo-name}}"
-
+                
               - name: deploy-dev-qas
                 serviceAccountName: argo-events-sa
                 inputs:
                   parameters:
                   - name: git-tag
                   - name: git-ssh-url
-                  - name: branch
                   - name: repo-name
                   artifacts:
                   - name: environment
@@ -274,44 +259,35 @@ spec:
                     cd {{inputs.parameters.repo-name}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
-                    git checkout $branch
-                    sed -i "s|image:.*|image: $$CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
+                    git checkout -f $BRANCH
+                    sed -i "s|image:.*|image: $CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
                     
                     git add .
                     git commit -m "patch by {{workflow.name}}"
                     git push
-                  envFrom:
-                  - configMapRef:
-                      name: ci-configmap
                   env:
                   - name: token
                     valueFrom:
                       secretKeyRef:
-                        name: github-arztz-access
-                        key: token
+                        name: git-access
+                        key: "{{inputs.parameters.repo-name}}"
+
+
+              - name: approve
+                suspend: {}
 
               - name: deploy-prod
-                
                 serviceAccountName: argo-events-sa
                 inputs:
                   parameters:
                   - name: git-tag
                   - name: git-ssh-url
-                  - name: branch
                   - name: repo-name
                   artifacts:
                   - name: environment
                     path: /tmp/.env
-                  - name: repository
-                    path: /workdir
-                    git:
-                      repo: "{{inputs.parameters.git-ssh-url}}"
-                      revision: "{{inputs.parameters.branch}}-{{inputs.parameters.git-tag}}"
-                      sshPrivateKeySecret:
-                        name: github-creds
-                        key: "{{inputs.parameters.repo-name}}"
                 container:
-                  image: google/cloud-sdk
+                  image: bitnami/git
                   resources:
                     limits:
                       cpu: 100m
@@ -323,31 +299,24 @@ spec:
                   command: [sh, -c]
                   args: 
                   - |
+                    
                     . /tmp/.env
-                    cat <<EOF > service_key.json
-                    $GCLOUD_SERVICE_KEY
-                    EOF
-                    gcloud auth activate-service-account --key-file=service_key.json
-                    gcloud container clusters get-credentials $GCLOUD_CLUSTER --zone asia-southeast1-b --project $GCLOUD_PROJECT_ID
-                    export DEPLOYMENT_NAME="$(kubectl get deploy -n $NAMESPACE-prod -l app=$APP_NAME | awk 'NR>1 { print $1 }')"
-                    echo DEPLOYMENT_NAME: $DEPLOYMENT_NAME
-                    export IMAGE=$CONTAINER_RELEASE_IMAGE_TAG
-                    echo IMAGE: $IMAGE
-                    export CONTAINER_NAME=$TARGET_CONTAINER
-                    echo CONTAINER_NAME: $CONTAINER_NAME
-                    sed -i "s|name:|name: $CONTAINER_NAME|g; s|image:|image: $IMAGE|g;" k8s/patch.yaml
-                    kubectl patch deploy -n $STAGING_NAMESPACE $DEPLOYMENT_NAME -p "$(cat k8s/patch.yaml)"
-                    ./patch.sh || true
-                  envFrom:
-                  - configMapRef:
-                      name: ci-configmap
+
+                    git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
+                    cd {{inputs.parameters.repo-name}}
+                    git config --global user.email "devops@humanize.co.th"
+                    git config --global user.name "Devops"
+                    git checkout -f $BRANCH
+                    sed -i "s|image:.*|image: $CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
+                    
+                    git add .
+                    git commit -m "patch by {{workflow.name}}"
+                    git push
                   env:
-                  - name: GCLOUD_SERVICE_KEY
+                  - name: token
                     valueFrom:
                       secretKeyRef:
-                        name: gcloud-creds-gcr
-                        key: gcloudServiceKey
-
-
+                        name: git-access
+                        key: "{{inputs.parameters.repo-name}}"
 
             
