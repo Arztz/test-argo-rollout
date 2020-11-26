@@ -47,6 +47,11 @@ spec:
                       parameters:
                       - name: message
                         value: "{{workflow.parameters.message}}"
+                - - name: prepare-projectid
+                    template: prepare-projectid
+                    artifacts:
+                      - name: environment
+                        from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
                 - - name: build-image
                     template: build-image
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
@@ -151,6 +156,30 @@ spec:
                   - name: repo-name
                     valueFrom:
                       path: /tmp/repo-name
+              - name: prepare-projectid
+                serviceAccountName: argo-events-sa
+                inputs:
+                  parameters:
+                  - name: repo-name
+                  artifacts:
+                  - name: environment
+                    path: /tmp/.env
+                container:
+                  image: stedolan/jq
+                  command: [/bin/bash, -c]
+                  args: 
+                  - |
+                    . /tmp/.env
+                    cat <<EOF >> /tmp/.env
+                    export REGISTRY=$CONTAINER_REGISTRY
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
+                    EOF
+
+                    cat /tmp/.env
+                  envFrom:
+                  - configMapRef:
+                      name: ci-configmap
 
               - name: build-image
                 serviceAccountName: argo-events-sa
@@ -184,14 +213,7 @@ spec:
                   args: 
                   - |
                     until docker ps; do sleep 3; done;
-                    . /tmp/.env
-                    echo $(test-argo-rollout)
-                    echo $({{inputs.parameters.repo-name}})
-                    cat <<EOF >> /tmp/.env
-                    export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
-                    EOF
+                    
                     . /tmp/.env
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
                     docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
