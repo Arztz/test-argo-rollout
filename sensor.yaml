@@ -185,11 +185,10 @@ spec:
                   - |
                     until docker ps; do sleep 3; done;
                     . /tmp/.env
-                    echo $({{inputs.parameters.repo-name}})
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/${{inputs.parameters.repo-name}}/$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/${{inputs.parameters.repo-name}}/$PROJECT_PATH_SLUG:$TAG
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
                     EOF
 
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
