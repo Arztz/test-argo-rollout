@@ -311,7 +311,7 @@ spec:
                     
                     git add .
                     git commit -m "patch by {{workflow.name}}"
-                    git push
+                    git push origin HEAD:$BRANCH
                   env:
                   - name: token
                     valueFrom:
