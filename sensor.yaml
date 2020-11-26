@@ -125,7 +125,7 @@ spec:
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
 
                     export PROJECT_ID=$(echo $GIT_DATA | jq -r '.repository.name')
-                    export PROJECT=$(echo $PROJECT_ID)
+                    export PROJECT=$($PROJECT_ID)
                     echo $PROJECT
 
                     
