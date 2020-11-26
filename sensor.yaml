@@ -124,11 +124,11 @@ spec:
                     echo $GIT_DATA | jq -r '.ref' > /tmp/git-tag
                     echo $BRANCH > /tmp/branch
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
-                    echo $($(cat /tmp/repo-name))
+                    export PROJECT_ID=$(cat /tmp/repo-name)
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$(cat /tmp/repo-name)/$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$(cat /tmp/repo-name)/$PROJECT_PATH_SLUG:$TAG
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$(PROJECT_ID)/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$(PROJECT_ID)/$PROJECT_PATH_SLUG:$TAG
                     EOF
 
                     cat /tmp/.env
