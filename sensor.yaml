@@ -268,5 +268,48 @@ spec:
                         name: git-access
                         key: "{{inputs.parameters.repo-name}}"
 
+              - name: deploy-prod
+                suspend: {}
+                serviceAccountName: argo-events-sa
+                inputs:
+                  parameters:
+                  - name: git-tag
+                  - name: git-ssh-url
+                  - name: repo-name
+                  artifacts:
+                  - name: environment
+                    path: /tmp/.env
+                container:
+                  image: bitnami/git
+                  resources:
+                    limits:
+                      cpu: 100m
+                      memory: 128Mi
+                    requests:
+                      cpu: 100m
+                      memory: 128Mi
+                  workingDir: /workdir
+                  command: [sh, -c]
+                  args: 
+                  - |
+                    
+                    . /tmp/.env
+
+                    git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
+                    cd {{inputs.parameters.repo-name}}
+                    git config --global user.email "devops@humanize.co.th"
+                    git config --global user.name "Devops"
+                    git checkout $BRANCH
+                    sed -i "s|image:.*|image: $CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
+                    
+                    git add .
+                    git commit -m "patch by {{workflow.name}}"
+                    git push
+                  env:
+                  - name: token
+                    valueFrom:
+                      secretKeyRef:
+                        name: git-access
+                        key: "{{inputs.parameters.repo-name}}"
 
             
