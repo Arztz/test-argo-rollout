@@ -185,7 +185,7 @@ spec:
                       repo: "{{inputs.parameters.git-ssh-url}}"
                       revision: "{{inputs.parameters.git-tag}}"
                       sshPrivateKeySecret:
-                        name: github-creds
+                        name: git-creds
                         key: "{{inputs.parameters.repo-name}}"
                 container:
                   image: docker:19.03
@@ -259,7 +259,7 @@ spec:
                     cd {{inputs.parameters.repo-name}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
-                    git checkout $BRANCH
+                    git checkout -f $BRANCH
                     sed -i "s|image:.*|image: $CONTAINER_RELEASE_IMAGE_TAG |g" patch.yaml
                     
                     git add .
