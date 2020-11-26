@@ -185,7 +185,7 @@ spec:
                   - |
                     until docker ps; do sleep 3; done;
                     . /tmp/.env
-                    $GCLOUD_PROJECT_ID=$(echo GCLOUD_SERVICE_KEY | jq -r '.peoject_id')
+                    $GCLOUD_PROJECT_ID=${{inputs.parameters.repo-name}}
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
                     export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$GCLOUD_PROJECT_ID/$PROJECT_PATH_SLUG
@@ -213,8 +213,6 @@ spec:
                         name: gcloud-creds-gcr
                         key: "{{inputs.parameters.repo-name}}"     
                 sidecars:
-                - name: jq
-                  image: stedolan/jq
                 - name: dind
                   image: docker:19.03-dind
                   securityContext:
