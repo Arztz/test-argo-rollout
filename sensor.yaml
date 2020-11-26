@@ -266,7 +266,7 @@ spec:
                     valueFrom:
                       secretKeyRef:
                         name: git-access
-                        key: {{inputs.parameters.repo-name}}
+                        key: "{{inputs.parameters.repo-name}}"
 
 
             
