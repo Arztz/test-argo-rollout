@@ -59,8 +59,6 @@ spec:
                         value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
                       - name: git-ssh-url
                         value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
-                      - name: cluster
-                        value: "{{steps.prepare-environment.outputs.parameters.cluster}}"  
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
@@ -118,14 +116,7 @@ spec:
                     export BRANCH=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[\.0-9-]//g')
                     EOF
 
-                    . /tmp/.env
-
-                    cat <<EOF >> /tmp/.env
-                    export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$GCLOUD_PROJECT_ID/$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$GCLOUD_PROJECT_ID/$PROJECT_PATH_SLUG:$TAG
-                    EOF
-
+                    
                     echo $GIT_DATA | jq -r '.ref_type' > /tmp/event-name
                     echo $GIT_DATA | jq -r '.repository.ssh_url' > /tmp/git-ssh-url
                     echo $GIT_DATA | jq -r '.ref' > /tmp/git-tag
@@ -133,17 +124,13 @@ spec:
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
                     echo $GCLOUD_CLUSTER > /tmp/cluster
 
-                    echo {{inputs.parameters.message}}
                     cat /tmp/.env
                     cat /tmp/event-name
                     cat /tmp/git-ssh-url
                     cat /tmp/git-tag
                     cat /tmp/branch
                     cat /tmp/repo-name
-                    cat /tmp/cluster
-                  envFrom:
-                  - configMapRef:
-                      name: ci-configmap
+                  
                 outputs:
                   artifacts: 
                   - name: environment
@@ -164,9 +151,6 @@ spec:
                   - name: repo-name
                     valueFrom:
                       path: /tmp/repo-name
-                  - name: cluster 
-                    valueFrom:
-                      path: /tmp/cluster
 
               - name: build-image
                 serviceAccountName: argo-events-sa
@@ -202,6 +186,13 @@ spec:
                   - |
                     until docker ps; do sleep 3; done;
                     . /tmp/.env
+                    $GCLOUD_PROJECT_ID=$(echo GCLOUD_SERVICE_KEY | jq -r '.peoject_id')
+                    cat <<EOF >> /tmp/.env
+                    export REGISTRY=$CONTAINER_REGISTRY
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$GCLOUD_PROJECT_ID/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$GCLOUD_PROJECT_ID/$PROJECT_PATH_SLUG:$TAG
+                    EOF
+
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
                     docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
                     docker pull $CONTAINER_RELEASE_IMAGE:latest || true
@@ -209,6 +200,9 @@ spec:
                     docker build --cache-from $CONTAINER_RELEASE_IMAGE:latest -t $CONTAINER_RELEASE_IMAGE_TAG .
                     docker push $CONTAINER_RELEASE_IMAGE:latest
                     docker push $CONTAINER_RELEASE_IMAGE_TAG 
+                  envFrom:
+                  - configMapRef:
+                      name: ci-configmap
                   env:
                   - name: DOCKER_TLS_CERTDIR
                     value: ""
@@ -218,7 +212,7 @@ spec:
                     valueFrom:
                       secretKeyRef:
                         name: gcloud-creds-gcr
-                        key: "{{inputs.parameters.cluster}}"     
+                        key: "{{inputs.parameters.repo-name}}"     
                 sidecars:
                 - name: dind
                   image: docker:19.03-dind
