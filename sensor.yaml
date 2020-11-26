@@ -213,6 +213,8 @@ spec:
                         name: gcloud-creds-gcr
                         key: "{{inputs.parameters.repo-name}}"     
                 sidecars:
+                - name: jq
+                  image: stedolan/jq
                 - name: dind
                   image: docker:19.03-dind
                   securityContext:
@@ -221,10 +223,7 @@ spec:
                   env:
                   - name: DOCKER_TLS_CERTDIR
                     value: ""
-                - name: jq
-                  image: stedolan/jq
-                  securityContext:
-                    privileged: true
+                
               - name: deploy-dev-qas
                 serviceAccountName: argo-events-sa
                 inputs:
