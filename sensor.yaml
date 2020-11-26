@@ -165,7 +165,9 @@ spec:
                     cat /tmp/git-tag
                     cat /tmp/branch
                     cat /tmp/repo-name
-                  
+                  envFrom:
+                  - configMapRef:
+                      name: ci-configmap  
                 outputs:
                   artifacts: 
                   - name: environment
