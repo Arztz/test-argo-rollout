@@ -49,9 +49,14 @@ spec:
                         value: "{{workflow.parameters.message}}"
                 - - name: prepare-projectid
                     template: prepare-projectid
-                    artifacts:
+                    arguments:
+                      parameters:
+                      - name: repo-name
+                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
+                      artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                    
                 - - name: build-image
                     template: build-image
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
