@@ -220,6 +220,7 @@ spec:
                     until docker ps; do sleep 3; done;
                     
                     . /tmp/.env
+                    cat /tmp/.env
                     printenv
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
                     docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
