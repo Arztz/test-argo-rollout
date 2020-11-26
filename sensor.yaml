@@ -185,7 +185,8 @@ spec:
                   - |
                     until docker ps; do sleep 3; done;
                     . /tmp/.env
-                    echo {{inputs.parameters.repo-name}}
+                    export CONTAINER_PROJECT_ID=$(echo {{inputs.parameters.repo-name}})
+                    echo $($CONTAINER_PROJECT_ID)
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
                     export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/${{inputs.parameters.repo-name}}/$PROJECT_PATH_SLUG
