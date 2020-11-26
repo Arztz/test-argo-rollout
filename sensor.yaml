@@ -79,6 +79,10 @@ spec:
                       artifacts:
                       - name: environment
                         from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                - - name: approve
+                    template: approve
+                    when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
+                            ( {{steps.prepare-environment.outputs.parameters.branch}} == 'prod') "
                 - - name: deploy-prod
                     template: deploy-prod
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
@@ -268,8 +272,11 @@ spec:
                         name: git-access
                         key: "{{inputs.parameters.repo-name}}"
 
-              - name: deploy-prod
+
+              - name: approve
                 suspend: {}
+
+              - name: deploy-prod
                 serviceAccountName: argo-events-sa
                 inputs:
                   parameters:
