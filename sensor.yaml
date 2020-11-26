@@ -116,6 +116,7 @@ spec:
                     export BRANCH=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[\.0-9-]//g')
                     EOF
 
+                    . /tmp/.env
                     
                     echo $GIT_DATA | jq -r '.ref_type' > /tmp/event-name
                     echo $GIT_DATA | jq -r '.repository.ssh_url' > /tmp/git-ssh-url
