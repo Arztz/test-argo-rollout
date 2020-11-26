@@ -262,7 +262,7 @@ spec:
                   - name: repo-name
                   artifacts:
                   - name: environment
-                    path: /tmp/.env2
+                    path: /tmp/.env
                 container:
                   image: bitnami/git
                   resources:
@@ -277,7 +277,7 @@ spec:
                   args: 
                   - |
                     
-                    . /tmp/.env2
+                    . /tmp/.env
 
                     git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
                     cd {{inputs.parameters.repo-name}}
@@ -285,7 +285,7 @@ spec:
                     git config --global user.name "Devops"
                     git checkout -f $BRANCH
                     chmod +x patch.sh
-                    . /patch.sh
+                    ./patch.sh
                     
                     git add .
                     git commit -m "patch by {{workflow.name}}"
@@ -310,7 +310,7 @@ spec:
                   - name: repo-name
                   artifacts:
                   - name: environment
-                    path: /tmp/.env2
+                    path: /tmp/.env
                 container:
                   image: bitnami/git
                   resources:
@@ -325,7 +325,7 @@ spec:
                   args: 
                   - |
                     
-                    . /tmp/.env2
+                    . /tmp/.env
 
                     git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
                     cd {{inputs.parameters.repo-name}}
