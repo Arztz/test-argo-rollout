@@ -190,7 +190,7 @@ spec:
                     export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
                     export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
                     EOF
-
+                    . /tmp/.env
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
                     docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
                     docker pull $CONTAINER_RELEASE_IMAGE:latest || true
