@@ -133,7 +133,7 @@ spec:
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
                     echo $GCLOUD_CLUSTER > /tmp/cluster
 
-                     {{inputs.parameters.message.repository}}
+                     {{inputs.parameters.message}}
                     cat /tmp/.env
                     cat /tmp/event-name
                     cat /tmp/git-ssh-url
