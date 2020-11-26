@@ -185,7 +185,10 @@ spec:
                   envFrom:
                   - configMapRef:
                       name: ci-configmap
-
+                outputs:
+                  artifacts: 
+                  - name: environment
+                    path: /tmp/.env
               - name: build-image
                 serviceAccountName: argo-events-sa
                 inputs:
@@ -221,7 +224,6 @@ spec:
                     
                     . /tmp/.env
                     cat /tmp/.env
-                    printenv
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
                     docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
                     docker pull $CONTAINER_RELEASE_IMAGE:latest || true
