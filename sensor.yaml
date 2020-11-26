@@ -220,6 +220,7 @@ spec:
                     until docker ps; do sleep 3; done;
                     
                     . /tmp/.env
+                    printenv
                     echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
                     docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
                     docker pull $CONTAINER_RELEASE_IMAGE:latest || true
@@ -227,9 +228,7 @@ spec:
                     docker build --cache-from $CONTAINER_RELEASE_IMAGE:latest -t $CONTAINER_RELEASE_IMAGE_TAG .
                     docker push $CONTAINER_RELEASE_IMAGE:latest
                     docker push $CONTAINER_RELEASE_IMAGE_TAG 
-                  envFrom:
-                  - configMapRef:
-                      name: ci-configmap
+
                   env:
                   - name: DOCKER_TLS_CERTDIR
                     value: ""
