@@ -131,8 +131,8 @@ spec:
                     
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$(echo $PROJECT_ID)/$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$(echo $PROJECT_ID)/$PROJECT_PATH_SLUG:$TAG
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$((echo $PROJECT_ID))/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$((echo $PROJECT_ID))/$PROJECT_PATH_SLUG:$TAG
                     EOF
 
                     cat /tmp/.env
