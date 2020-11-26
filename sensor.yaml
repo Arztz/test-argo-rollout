@@ -128,11 +128,11 @@ spec:
                     export PROJECT_ID=$(echo $GIT_DATA | jq -r '.repository.name')
                     echo $PROJECT_ID
 
-                    $(echo $PROJECT_ID)
+                    
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
-                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY//$PROJECT_PATH_SLUG
-                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY//$PROJECT_PATH_SLUG:$TAG
+                    export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$(echo $PROJECT_ID)/$PROJECT_PATH_SLUG
+                    export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$(echo $PROJECT_ID)/$PROJECT_PATH_SLUG:$TAG
                     EOF
 
                     cat /tmp/.env
