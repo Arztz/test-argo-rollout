@@ -7,4 +7,4 @@ spec:
     spec:
       containers:
       - name: rollouts-demo
-        image: asia.gcr.io/devops-sandbox-291905/arztz-test-argo-rollout:1.1.23 
+        image:  
