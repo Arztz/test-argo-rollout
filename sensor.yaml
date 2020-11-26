@@ -185,7 +185,7 @@ spec:
                   - |
                     until docker ps; do sleep 3; done;
                     . /tmp/.env
-                    echo $(${test-argo-rollout})
+                    echo $(${{test-argo-rollout}})
                     echo $({{inputs.parameters.repo-name}})
                     cat <<EOF >> /tmp/.env
                     export REGISTRY=$CONTAINER_REGISTRY
