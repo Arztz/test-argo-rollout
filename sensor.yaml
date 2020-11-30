@@ -357,7 +357,7 @@ spec:
                     
                     . /tmp/.env
 
-                    git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
+                    git clone https://admin:$token@$argocd-git
                     cd {{inputs.parameters.repo-name}}
                     git config --global user.email "devops@humanize.co.th"
                     git config --global user.name "Devops"
@@ -372,6 +372,11 @@ spec:
                     valueFrom:
                       secretKeyRef:
                         name: git-access
+                        key: "{{inputs.parameters.repo-name}}"
+                  - name: argocd-git
+                    valueFrom:
+                      secretKeyRef:
+                        name: argocd-git
                         key: "{{inputs.parameters.repo-name}}"
 
             
