@@ -48,25 +48,17 @@ spec:
                       - name: message
                         value: "{{workflow.parameters.message}}"
 
-                - - name: prepare-environment-github
-                    template: prepare-environment-github
-                    when: "{{steps.prepare-repo-name.outputs.parameters.git}} == 'github'"
+                - - name: prepare-environment
+                    template: prepare-environment
                     arguments:
                       parameters:
                       - name: repo-name
                         value: "{{steps.prepare-repo-name.outputs.parameters.repo-name}}"
                       - name: message
                         value: "{{workflow.parameters.message}}"
+                      - name: git
+                        value: "{{steps.prepare-repo-name.outputs.parameters.git}}"
 
-                  - name: prepare-environment-gitlab
-                    template: prepare-environment-gitlab
-                    when: "{{steps.prepare-repo-name.outputs.parameters.git}} == 'gitlab'"
-                    arguments:
-                      parameters:
-                      - name: repo-name
-                        value: "{{steps.prepare-repo-name.outputs.parameters.repo-name}}"
-                      - name: message
-                        value: "{{workflow.parameters.message}}"
                     
                 - - name: build-image
                     template: build-image
@@ -142,12 +134,13 @@ spec:
                     valueFrom:
                       path: /tmp/git
 
-              - name: prepare-environment-github
+              - name: prepare-environment
                 serviceAccountName: argo-events-sa
                 inputs:
                   parameters:
                   - name: message
                   - name: repo-name
+                  = name: git
                 container:
                   image: stedolan/jq
                   command: [/bin/bash, -c]
@@ -156,6 +149,7 @@ spec:
                     
                     export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
 
+                    if ($git == 'gitlab'); then
                     cat <<EOF > /tmp/.env
                     export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.homepage' | sed 's|https://gitlab.com/||g; s|_|-|g; s|/|-|g;' | tr '[A-Z]' '[a-z]')
                     export TAG=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[a-z-]//g' | sed 's#.*/##')
@@ -174,51 +168,7 @@ spec:
                     echo $GIT_DATA | jq -r '.ref' | sed 's#.*/##' > /tmp/git-tag
                     echo $BRANCH > /tmp/branch
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
-
-                    cat /tmp/.env
-                    cat /tmp/event-name
-                    cat /tmp/git-ssh-url
-                    cat /tmp/git-tag
-                    cat /tmp/branch
-                    cat /tmp/repo-name
-                  envFrom:
-                  - configMapRef:
-                      name: ci-configmap  
-                outputs:
-                  artifacts: 
-                  - name: environment
-                    path: /tmp/.env
-                  parameters:
-                  - name: event-name
-                    valueFrom:
-                      path: /tmp/event-name
-                  - name: git-ssh-url
-                    valueFrom:
-                      path: /tmp/git-ssh-url
-                  - name: git-tag
-                    valueFrom:
-                      path: /tmp/git-tag
-                  - name: branch
-                    valueFrom:
-                      path: /tmp/branch
-                  - name: repo-name
-                    valueFrom:
-                      path: /tmp/repo-name
-              
-              - name: prepare-environment-gitlab
-                serviceAccountName: argo-events-sa
-                inputs:
-                  parameters:
-                  - name: message
-                  - name: repo-name
-                container:
-                  image: stedolan/jq
-                  command: [/bin/bash, -c]
-                  args: 
-                  - |
-                    
-                    export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
-
+                    else
                     cat <<EOF > /tmp/.env
                     export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.html_url' | sed 's|https://github.com/||g; s|_|-|g; s|/|-|g;' | tr '[A-Z]' '[a-z]')
                     export TAG=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[a-z-]//g')
@@ -237,7 +187,7 @@ spec:
                     echo $GIT_DATA | jq -r '.ref' > /tmp/git-tag
                     echo $BRANCH > /tmp/branch
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
-
+                    fi
                     cat /tmp/.env
                     cat /tmp/event-name
                     cat /tmp/git-ssh-url
