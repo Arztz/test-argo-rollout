@@ -142,7 +142,7 @@ spec:
                   parameters:
                   - name: message
                   - name: repo-name
-                  = name: git
+                  - name: git
                 container:
                   image: stedolan/jq
                   command: [/bin/bash, -c]
