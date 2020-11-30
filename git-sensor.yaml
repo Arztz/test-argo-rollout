@@ -43,7 +43,7 @@ spec:
                 steps:
                 - - name: prepare-repo-name
                     templateRef: 
-                      name: prepare-repo-name
+                      name: workflow-template-submittable
                       template: prepare-repo-name-template
                     arguments:
                       parameters:
@@ -52,7 +52,7 @@ spec:
 
                 - - name: prepare-environment
                     templateRef: 
-                      name: prepare-environment
+                      name: workflow-template-submittable
                       template: prepare-environment-template
                     arguments:
                       parameters:
@@ -66,7 +66,7 @@ spec:
                     
                 - - name: build-image
                     templateRef: 
-                      name: build-image
+                      name: workflow-template-submittable
                       template: build-image-template
                     when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
                             ( {{steps.prepare-environment.outputs.parameters.branch}} == 'dev') "
@@ -89,7 +89,7 @@ spec:
 
                 - - name: deploy
                     templateRef: 
-                      name: deploy
+                      name: workflow-template-submittable
                       template: deploy-template
                     when: "( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) "
                     arguments:
