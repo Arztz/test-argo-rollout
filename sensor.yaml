@@ -7,7 +7,7 @@ spec:
     serviceAccountName: argo-events-sa
   dependencies:
   - name: test-dep
-    eventSourceName: test-github-controller
+    eventSourceName: github-controller
     eventName: testController
   triggers:
   - template:
