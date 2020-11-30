@@ -1,0 +1,111 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Sensor
+metadata:
+  name: git-test
+spec:
+  template:
+    serviceAccountName: argo-events-sa
+  dependencies:
+  - name: github
+    eventSourceName: github-controller
+    eventName: testController
+  triggers:
+  - template:
+      name: git-workflow-trigger
+      k8s:
+        group: argoproj.io
+        version: v1alpha1
+        resource: workflows
+        operation: create
+        parameters:
+        - src:
+            dependencyName: github
+            dataKey: body
+          dest: spec.arguments.parameters.0.value
+        source:
+          resource:
+            apiVersion: argoproj.io/v1alpha1
+            kind: Workflow
+            metadata:
+              generateName: git-workflow-git-test-
+            spec:
+              entrypoint: pipeline
+              ttlStrategy:
+                secondsAfterCompletion: 259200
+              podGC:
+                strategy: OnWorkflowSuccess
+              arguments:
+                parameters:
+                - name: message
+                  value: hello world
+              templates:
+              - name: pipeline
+                steps:
+                - - name: prepare-repo-name
+                    templateRef: 
+                      name: workflow-template-submittable
+                      template: prepare-repo-name-template
+                    arguments:
+                      parameters:
+                      - name: message
+                        value: "{{workflow.parameters.message}}"
+
+                - - name: prepare-environment
+                    templateRef: 
+                      name: workflow-template-submittable
+                      template: prepare-environment-template
+                    arguments:
+                      parameters:
+                      - name: repo-name
+                        value: "{{steps.prepare-repo-name.outputs.parameters.repo-name}}"
+                      - name: message
+                        value: "{{workflow.parameters.message}}"
+                      - name: git
+                        value: "{{steps.prepare-repo-name.outputs.parameters.git}}"
+
+                    
+                - - name: build-image
+                    templateRef: 
+                      name: workflow-template-submittable
+                      template: build-image-template
+                    when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
+                            ( {{steps.prepare-environment.outputs.parameters.branch}} == 'dev') "
+                    arguments:
+                      parameters:
+                      - name: git-tag
+                        value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
+                      - name: repo-name
+                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
+                      - name: git-ssh-url
+                        value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
+                      artifacts:
+                      - name: environment
+                        from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+
+                - - name: approve
+                    template: approve
+                    when: " ( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) && 
+                            ( {{steps.prepare-environment.outputs.parameters.branch}} == 'prod') "
+
+                - - name: deploy
+                    templateRef: 
+                      name: workflow-template-submittable
+                      template: deploy-template
+                    when: "( {{steps.prepare-environment.outputs.parameters.event-name}} == 'tag' ) "
+                    arguments:
+                      parameters:
+                      - name: git-tag
+                        value: "{{steps.prepare-environment.outputs.parameters.git-tag}}"
+                      - name: repo-name
+                        value: "{{steps.prepare-environment.outputs.parameters.repo-name}}"
+                      - name: git-ssh-url
+                        value: "{{steps.prepare-environment.outputs.parameters.git-ssh-url}}"
+                      artifacts:
+                      - name: environment
+                        from: "{{steps.prepare-environment.outputs.artifacts.environment}}"
+                
+
+              - name: approve
+                suspend: {}
+
+            
