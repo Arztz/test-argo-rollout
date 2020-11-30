@@ -123,8 +123,8 @@ spec:
                   - |
                     export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
                     echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
-                    if (cat GITDATA | grep -c github >0); then (echo github) > /tmp/git fi
-                    if (cat GITDATA | grep -c gitlab >0); then (echo gitlab) > /tmp/git fi
+                    if (echo $GIT_DATA | grep -c github >0); then (echo github) > /tmp/git fi
+                    if (echo $GIT_DATA | grep -c gitlab >0); then (echo gitlab) > /tmp/git fi
                 outputs:
                   parameters:
                   - name: repo-name
