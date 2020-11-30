@@ -1,0 +1,225 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: workflow-template-submittable
+spec:
+  arguments:
+    parameters:
+      - name: message
+        value: hello world
+  templates:
+    - name: prepare-repo-name-template
+      serviceAccountName: argo-events-sa
+      inputs:
+        parameters:
+        - name: message
+      container:
+        image: stedolan/jq
+        command: [/bin/bash, -c]
+        args: 
+        - |
+          export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
+          echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
+          if (echo $GIT_DATA | grep -c github >0); then (echo github) > /tmp/git 
+          fi
+          if (echo $GIT_DATA | grep -c gitlab >0); then (echo gitlab) > /tmp/git 
+          fi
+      outputs:
+        parameters:
+        - name: repo-name
+          valueFrom:
+            path: /tmp/repo-name
+        - name: git
+          valueFrom:
+            path: /tmp/git
+
+    - name: prepare-environment-template
+      serviceAccountName: argo-events-sa
+      inputs:
+        parameters:
+        - name: message
+        - name: repo-name
+        - name: git
+      container:
+        image: stedolan/jq
+        command: [/bin/bash, -c]
+        args: 
+        - |
+          
+          export GIT_DATA=$(echo '{{inputs.parameters.message}}' | jq -r . )
+
+          if ($git == 'gitlab'); then
+          cat <<EOF > /tmp/.env
+          export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.homepage' | sed 's|https://gitlab.com/||g; s|_|-|g; s|/|-|g;' | tr '[A-Z]' '[a-z]')
+          export TAG=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[a-z-]//g' | sed 's#.*/##')
+          export BRANCH=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[\.0-9-]//g' | sed 's#.*/##')
+          EOF
+
+          . /tmp/.env
+          cat <<EOF >> /tmp/.env
+          export REGISTRY=$CONTAINER_REGISTRY
+          export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
+          export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
+          EOF
+          
+          echo $GIT_DATA | jq -r '.event_name' > /tmp/event-name
+          echo $GIT_DATA | jq -r '.repository.git_ssh_url' > /tmp/git-ssh-url
+          echo $GIT_DATA | jq -r '.ref' | sed 's#.*/##' > /tmp/git-tag
+          echo $BRANCH > /tmp/branch
+          echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
+          else
+          cat <<EOF > /tmp/.env
+          export PROJECT_PATH_SLUG=$(echo $GIT_DATA | jq -r '.repository.html_url' | sed 's|https://github.com/||g; s|_|-|g; s|/|-|g;' | tr '[A-Z]' '[a-z]')
+          export TAG=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[a-z-]//g')
+          export BRANCH=$(echo $GIT_DATA | jq -r '.ref' | sed 's/[\.0-9-]//g')
+          EOF
+
+          . /tmp/.env
+          cat <<EOF >> /tmp/.env
+          export REGISTRY=$CONTAINER_REGISTRY
+          export CONTAINER_RELEASE_IMAGE=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG
+          export CONTAINER_RELEASE_IMAGE_TAG=$CONTAINER_REGISTRY/$({{inputs.parameters.repo-name}})/$PROJECT_PATH_SLUG:$TAG
+          EOF
+          
+          echo $GIT_DATA | jq -r '.ref_type' > /tmp/event-name
+          echo $GIT_DATA | jq -r '.repository.ssh_url' > /tmp/git-ssh-url
+          echo $GIT_DATA | jq -r '.ref' > /tmp/git-tag
+          echo $BRANCH > /tmp/branch
+          echo $GIT_DATA | jq -r '.repository.name' > /tmp/repo-name
+          fi
+          cat /tmp/.env
+          cat /tmp/event-name
+          cat /tmp/git-ssh-url
+          cat /tmp/git-tag
+          cat /tmp/branch
+          cat /tmp/repo-name
+        envFrom:
+        - configMapRef:
+            name: ci-configmap  
+      outputs:
+        artifacts: 
+        - name: environment
+          path: /tmp/.env
+        parameters:
+        - name: event-name
+          valueFrom:
+            path: /tmp/event-name
+        - name: git-ssh-url
+          valueFrom:
+            path: /tmp/git-ssh-url
+        - name: git-tag
+          valueFrom:
+            path: /tmp/git-tag
+        - name: branch
+          valueFrom:
+            path: /tmp/branch
+        - name: repo-name
+          valueFrom:
+            path: /tmp/repo-name
+
+    - name: build-image-template
+      serviceAccountName: argo-events-sa
+      inputs:
+        parameters:
+        - name: git-tag
+        - name: git-ssh-url
+        - name: repo-name
+        artifacts:
+        - name: environment
+          path: /tmp/.env2
+        - name: repository
+          path: /workdir
+          git:
+            repo: "{{inputs.parameters.git-ssh-url}}"
+            revision: "{{inputs.parameters.git-tag}}"
+            sshPrivateKeySecret:
+              name: git-creds
+              key: "{{inputs.parameters.repo-name}}"
+      container:
+        image: docker:19.03
+        resources:
+          limits:
+            cpu: 1500m
+            memory: 1024Mi
+          requests:
+            cpu: 1000m
+            memory: 1024Mi
+        workingDir: /workdir
+        command: [sh, -c]
+        args: 
+        - |
+          until docker ps; do sleep 3; done;
+          
+          . /tmp/.env2
+          cat /tmp/.env2
+          echo $GCLOUD_SERVICE_KEY | docker login -u _json_key --password-stdin $REGISTRY
+          docker pull $CONTAINER_RELEASE_IMAGE-build:latest || true
+          docker pull $CONTAINER_RELEASE_IMAGE:latest || true
+          docker build --cache-from $CONTAINER_RELEASE_IMAGE-build:latest --target build -t $CONTAINER_RELEASE_IMAGE-build . || true
+          docker build --cache-from $CONTAINER_RELEASE_IMAGE:latest -t $CONTAINER_RELEASE_IMAGE_TAG .
+          docker push $CONTAINER_RELEASE_IMAGE:latest
+          docker push $CONTAINER_RELEASE_IMAGE_TAG 
+
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+        - name: DOCKER_HOST
+          value: 127.0.0.1
+        - name: GCLOUD_SERVICE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: gcloud-creds-gcr
+              key: "{{inputs.parameters.repo-name}}"     
+      sidecars:
+      - name: dind
+        image: docker:19.03-dind
+        securityContext:
+          privileged: true
+        mirrorVolumeMounts: true
+        env:
+        - name: DOCKER_TLS_CERTDIR
+          value: ""
+
+    - name: deploy-template
+      serviceAccountName: argo-events-sa
+      inputs:
+        parameters:
+        - name: git-tag
+        - name: git-ssh-url
+        - name: repo-name
+        artifacts:
+        - name: environment
+          path: /tmp/.env
+      container:
+        image: bitnami/git
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        workingDir: /workdir
+        command: [sh, -c]
+        args: 
+        - |
+          
+          . /tmp/.env
+
+          git clone https://admin:$token@github.com/Arztz/test-argo-rollout.git
+          cd {{inputs.parameters.repo-name}}
+          git config --global user.email "devops@humanize.co.th"
+          git config --global user.name "Devops"
+          git checkout -f $BRANCH
+          chmod +x patch.sh
+          ./patch.sh
+          
+          git add .
+          git commit -m "patch by {{workflow.name}}"
+          git push
+        env:
+        - name: token
+          valueFrom:
+            secretKeyRef:
+              name: git-access
+              key: "{{inputs.parameters.repo-name}}"
